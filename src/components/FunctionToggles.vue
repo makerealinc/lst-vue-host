@@ -44,6 +44,7 @@
       <TimerButtons
         v-else-if="toggleCategory === 'Timers'"
         :active-cues="activeCues"
+        :cues="rawCues" 
         @toggle-cue="toggleCue"
         @timer-expired="handleTimerExpired"
       />
