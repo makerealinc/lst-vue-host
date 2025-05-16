@@ -5,6 +5,8 @@
       @refresh="refreshFunctions"
       @toggle-checklist="toggleChecklistPanel"
       @toggle-keyboard-shortcuts="toggleKeyboardShortcutsModal"
+      @blackout="stopAllCues"
+      @force-blackout="forceStopAllCues"
     />
 
     <div v-if="loading" class="flex justify-center items-center flex-grow">
@@ -196,6 +198,10 @@ export default defineComponent({
         socket.value?.send(JSON.stringify({
           subscribe: 'main',
         }));
+
+        socket.value?.send(JSON.stringify({
+          subscribe: 'qlc'
+        }))
         
         socket.value?.send(JSON.stringify({
           channel: 'main',
@@ -539,7 +545,9 @@ export default defineComponent({
       cancelChecklist,
       completeCurrentStep,
       retryCurrentStep,
-      handleCustomAction
+      handleCustomAction,
+      stopAllCues,
+      forceStopAllCues
     };
   }
 });

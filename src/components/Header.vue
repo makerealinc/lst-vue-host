@@ -13,6 +13,20 @@
         REFRESH
       </button>
       <button 
+        @click="handleBlackout" 
+        class="px-3 py-1 text-sm font-bold font-mono bg-red-900 hover:bg-red-800 border-2 border-red-800 rounded-sm transition-colors"
+        title="Stop all active cues"
+      >
+        BLACKOUT
+      </button>
+      <button 
+        @click="handleForceBlackout" 
+        class="px-3 py-1 text-sm font-bold font-mono bg-red-700 hover:bg-red-600 border-2 border-red-600 rounded-sm transition-colors"
+        title="Force stop all cues"
+      >
+        FORCE BLACKOUT
+      </button>
+      <button 
         @click="toggleChecklist" 
         class="px-3 py-1 text-sm font-bold font-mono bg-zinc-700 hover:bg-zinc-600 border-2 border-zinc-600 rounded-sm transition-colors"
       >
@@ -40,16 +54,20 @@ export default defineComponent({
       required: true
     }
   },
-  emits: ['refresh', 'toggleKeyboardShortcuts', 'toggleChecklist'],
+  emits: ['refresh', 'toggleKeyboardShortcuts', 'toggleChecklist', 'blackout', 'force-blackout'],
   setup(_, { emit }) {
     const refreshFunctions = () => emit('refresh');
     const toggleKeyboardShortcuts = () => emit('toggleKeyboardShortcuts');
     const toggleChecklist = () => emit('toggleChecklist');
+    const handleBlackout = () => emit('blackout');
+    const handleForceBlackout = () => emit('force-blackout');
 
     return {
       refreshFunctions,
       toggleKeyboardShortcuts,
-      toggleChecklist
+      toggleChecklist,
+      handleBlackout,
+      handleForceBlackout
     };
   }
 });
