@@ -27,8 +27,10 @@
         :raw-cues="rawCues"
         :active-cues="activeCues"
         :toggle-tabs="toggleTabs"
+        :panel-state="panelState"
         @trigger-cue="triggerCue"
         @toggle-cue="toggleCue"
+        @trigger-custom-action="handleCustomAction"
       />
     </main>
 
@@ -85,6 +87,12 @@ export default defineComponent({
     const showKeyboardShortcuts = ref(false);
     const showChecklistPanel = ref(false);
     const lastPlayedCueId = ref<string | null>(null);
+    
+    // Panel state for bomb panels
+    const panelState = ref({
+      active_panels: [],
+      waiting_for_plunger: []
+    });
 
     // Checklist state
     const checklists = ref<Checklist[]>(checklistData);
@@ -102,6 +110,10 @@ export default defineComponent({
       },
       {
         name: 'All',
+        cues: []
+      },
+      {
+        name: 'Bomb',
         cues: []
       },
       {
@@ -228,6 +240,18 @@ export default defineComponent({
             case 'tabConfig':
               if (message.data && 'tabs' in message.data) {
                 loadToggleTabsConfig(message.data.tabs);
+              }
+              break;
+              
+            default:
+              // Handle panel state updates - use type assertion for custom message format
+              const customMessage = message as any; // Use type assertion to bypass TypeScript checking
+              if (customMessage.event === 'state' && customMessage.target === 'drop_panels') {
+                panelState.value = {
+                  active_panels: customMessage.active_panels || [],
+                  waiting_for_plunger: customMessage.waiting_for_plunger || []
+                };
+                console.log('Updated panel state:', panelState.value);
               }
               break;
           }
@@ -439,10 +463,27 @@ export default defineComponent({
             cues: rawCues.value.map(cue => cue.id)
           },
           {
+            name: 'Bomb',
+            cues: []
+          },
+          {
             name: 'Custom',
             cues: ['QLC:59', 'QLC:20', 'QLC:140']
           }
         ];
+      }
+    }
+
+    // Add a new method to handle custom actions
+    function handleCustomAction(payload: any): void {
+      if (socket.value?.readyState === WebSocket.OPEN) {
+        socket.value.send(JSON.stringify({
+          channel: 'main',
+          ...payload
+        }));
+        console.log('Sent custom action:', payload);
+      } else {
+        console.warn('WebSocket not connected, cannot send custom action');
       }
     }
 
@@ -475,6 +516,7 @@ export default defineComponent({
       showKeyboardShortcuts,
       keyboardMacros,
       lastPlayedCueId,
+      panelState, // Added panel state to return object
       
       // Checklist state
       showChecklistPanel,
@@ -496,7 +538,9 @@ export default defineComponent({
       startChecklist,
       cancelChecklist,
       completeCurrentStep,
-      retryCurrentStep
+      retryCurrentStep,
+      handleCustomAction
     };
   }
-});</script>
+});
+</script>

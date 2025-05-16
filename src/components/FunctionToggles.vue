@@ -26,6 +26,12 @@
         @trigger-cue="triggerCue"
       />
       
+      <BombButtons
+        v-else-if="toggleCategory === 'Bomb'"
+        :panel-state="panelState"
+        @trigger-custom-action="handleCustomAction"
+      />
+      
       <ToggleButtons
         v-else
         :cues="filteredToggleCues"
@@ -39,14 +45,16 @@
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue';
 import type { QlcCue, ToggleTab } from '@/types';
-import ActiveCues from './toggles/ActiveCues.vue';
-import ToggleButtons from './toggles/ToggleButtons.vue';
+import ActiveCues from '@/components/toggles/ActiveCues.vue';
+import ToggleButtons from '@/components/toggles/ToggleButtons.vue';
+import BombButtons from '@/components/toggles/BombButtons.vue';
 
 export default defineComponent({
   name: 'FunctionToggles',
   components: {
     ActiveCues,
-    ToggleButtons
+    ToggleButtons,
+    BombButtons
   },
   props: {
     rawCues: {
@@ -60,14 +68,18 @@ export default defineComponent({
     toggleTabs: {
       type: Array as () => ToggleTab[],
       required: true
+    },
+    panelState: {
+      type: Object,
+      default: () => ({ active_panels: [], waiting_for_plunger: [] })
     }
   },
-  emits: ['triggerCue', 'toggleCue'],
+  emits: ['triggerCue', 'toggleCue', 'triggerCustomAction'],
   setup(props, { emit }) {
     const toggleCategory = ref('Active');
 
     const filteredToggleCues = computed(() => {
-      if (toggleCategory.value === 'Active') return [];
+      if (toggleCategory.value === 'Active' || toggleCategory.value === 'Bomb') return [];
       
       const currentTab = props.toggleTabs.find(tab => tab.name === toggleCategory.value);
       if (!currentTab) return [];
@@ -96,12 +108,14 @@ export default defineComponent({
 
     const triggerCue = (qlcId: number, action: 'start' | 'stop') => emit('triggerCue', qlcId, action);
     const toggleCue = (qlcId: number) => emit('toggleCue', qlcId);
+    const handleCustomAction = (payload: any) => emit('triggerCustomAction', payload);
 
     return {
       toggleCategory,
       filteredToggleCues,
       triggerCue,
-      toggleCue
+      toggleCue,
+      handleCustomAction
     };
   }
 });
