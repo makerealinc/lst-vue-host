@@ -130,13 +130,13 @@ export default defineComponent({
         'OFFERING',
         'POSE',
         'POT',
-        'POSE2',
         'BOTTLE',
-        'POSE3',
-        'MUSIC',
         'MAIZE',
         'SPLIT',
-        'FINALE'
+        'MUSIC',
+        'BOMB',
+        'PHOTOS',
+        'SIGNOFF'
       ];
       
       const categories: Record<string, QlcCue[]> = {};
