@@ -15,6 +15,15 @@
         >
           {{ tab.name }}
         </button>
+        <button 
+          @click="toggleCategory = 'Timers'"
+          :class="[
+            'px-2 py-1 rounded-none text-sm font-bold font-mono transition-colors whitespace-nowrap uppercase border-2',
+            toggleCategory === 'Timers' ? 'bg-blue-800 border-blue-500' : 'bg-zinc-700 hover:bg-zinc-600 border-zinc-600'
+          ]"
+        >
+          Timers
+        </button>
       </div>
     </div>
     
@@ -30,6 +39,13 @@
         v-else-if="toggleCategory === 'Bomb'"
         :panel-state="panelState"
         @trigger-custom-action="handleCustomAction"
+      />
+      
+      <TimerButtons
+        v-else-if="toggleCategory === 'Timers'"
+        :active-cues="activeCues"
+        @toggle-cue="toggleCue"
+        @timer-expired="handleTimerExpired"
       />
       
       <ToggleButtons
@@ -48,13 +64,15 @@ import type { QlcCue, ToggleTab } from '@/types';
 import ActiveCues from '@/components/toggles/ActiveCues.vue';
 import ToggleButtons from '@/components/toggles/ToggleButtons.vue';
 import BombButtons from '@/components/toggles/BombButtons.vue';
+import TimerButtons from '@/components/toggles/TimerButtons.vue';
 
 export default defineComponent({
   name: 'FunctionToggles',
   components: {
     ActiveCues,
     ToggleButtons,
-    BombButtons
+    BombButtons,
+    TimerButtons
   },
   props: {
     rawCues: {
@@ -79,7 +97,7 @@ export default defineComponent({
     const toggleCategory = ref('Active');
 
     const filteredToggleCues = computed(() => {
-      if (toggleCategory.value === 'Active' || toggleCategory.value === 'Bomb') return [];
+      if (toggleCategory.value === 'Active' || toggleCategory.value === 'Bomb' || toggleCategory.value === 'Timers') return [];
       
       const currentTab = props.toggleTabs.find(tab => tab.name === toggleCategory.value);
       if (!currentTab) return [];
@@ -109,13 +127,19 @@ export default defineComponent({
     const triggerCue = (qlcId: number, action: 'start' | 'stop') => emit('triggerCue', qlcId, action);
     const toggleCue = (qlcId: number) => emit('toggleCue', qlcId);
     const handleCustomAction = (payload: any) => emit('triggerCustomAction', payload);
+    
+    const handleTimerExpired = (cueId: number) => {
+      console.log(`Timer for cue ${cueId} expired`);
+      // Additional logic for when timer expires can be added here
+    };
 
     return {
       toggleCategory,
       filteredToggleCues,
       triggerCue,
       toggleCue,
-      handleCustomAction
+      handleCustomAction,
+      handleTimerExpired
     };
   }
 });
