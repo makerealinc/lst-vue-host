@@ -188,14 +188,19 @@ export default defineComponent({
       timer.state = 'running';
       timer.interval = window.setInterval(() => {
         if (timer.timeRemaining > 0) {
-          timer.timeRemaining -= 1;
+          // Create a new reference to trigger reactivity
+          const index = timers.value.findIndex(t => t.cueId === timer.cueId);
+          if (index !== -1) {
+            const updatedTimer = { ...timers.value[index] };
+            updatedTimer.timeRemaining -= 1;
+            timers.value[index] = updatedTimer;
+          }
         } else {
           stopTimer(timer);
           emit('timerExpired', timer.cueId);
         }
       }, 1000);
     };
-
     // Stop the timer and cue
     const stopTimer = (timer: Timer) => {
       console.log(`Stopping timer for cue ${timer.id} (${timer.cueId})`);
